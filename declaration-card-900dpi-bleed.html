@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ontario Declaration Card Designer</title>
+<style>
+:root{--navy:#10284a;--gold:#b89248;--paper:#f7f4ec;--ink:#17202a;--muted:#667085}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#e9edf2;color:var(--ink)}
+.app{display:grid;grid-template-columns:minmax(320px,430px) 1fr;gap:18px;padding:18px;align-items:start}.panel{background:#fff;border:1px solid #cfd6df;border-radius:14px;padding:16px;box-shadow:0 3px 14px rgba(0,0,0,.08)}
+h1{font-size:22px;margin:0 0 6px}h2{font-size:16px;margin:18px 0 8px}.help{color:var(--muted);font-size:13px}label{display:block;font-weight:700;font-size:12px;margin-top:10px}input,textarea,select,button{font:inherit}
+input[type=text],input[type=date],textarea,select{width:100%;border:1px solid #b9c2cf;border-radius:8px;padding:9px 10px;background:#fff}textarea{min-height:66px;resize:vertical}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+button{border:0;border-radius:9px;padding:10px 12px;font-weight:800;cursor:pointer}.primary{background:var(--navy);color:#fff}.secondary{background:#eef2f6;color:#17202a;border:1px solid #cbd3dd}.warn{background:#fff4df;color:#6c4600;border:1px solid #dfc48a}
+.stage{display:flex;justify-content:center;padding:8px;overflow:auto}.card-wrap{width:3.375in}.card{width:3.375in;height:2.125in;background:var(--paper);border:1px solid #adb5bf;border-radius:.12in;overflow:hidden;position:relative;color:#111;box-shadow:0 4px 15px rgba(0,0,0,.2)}
+.card .header{height:.42in;background:var(--navy);color:#fff;padding:.08in .12in;display:flex;align-items:center;justify-content:space-between}.title{font-weight:900;font-size:13px;letter-spacing:.4px;line-height:1.05}.subtitle{font-size:7px;color:#eedba6;margin-top:3px}.logo{width:.28in;height:.28in;border-radius:50%;background:#fff;border:2px solid var(--gold);object-fit:contain;padding:2px;display:block;flex:0 0 auto}
+.body{display:grid;grid-template-columns:.70in minmax(0,1.28in) .95in;gap:.055in;padding:.055in .075in 0;height:1.20in;overflow:hidden}
+.body>div{min-width:0;overflow:hidden}.photo{width:.64in;height:.73in;border:1px solid #8f98a3;border-radius:.055in;object-fit:cover;background:#dde3ea}.details{display:flex;flex-direction:column;gap:3px;min-width:0}.detail-row{display:grid;grid-template-columns:1fr 1fr;gap:5px;min-width:0}.detail-row.single{grid-template-columns:1fr}.field{font-size:5.55px;line-height:1.08;min-width:0;overflow:hidden}.field b{display:block;font-size:4.55px;line-height:1.05;color:#3b4a5a;text-transform:uppercase;letter-spacing:.18px;margin-bottom:1px}.field span{display:block;white-space:normal;overflow-wrap:anywhere;max-height:2.2em;overflow:hidden}.field.compact span{max-height:1.15em}.status{font-size:6.05px;line-height:1.05;font-weight:900;color:#0d3f73}
+.notary-box{border:1px solid #718096;border-radius:.055in;padding:.035in;background:#fff;font-size:4.55px;line-height:1.04;overflow:hidden;display:flex;flex-direction:column;gap:2px}.notary-box b{font-size:4.25px;line-height:1.02}.notary-row{display:grid;grid-template-columns:1fr 1fr;gap:5px}.notary-value{min-height:7px;max-height:1.2em;overflow:hidden}.line{border-bottom:1px solid #555;min-height:8px;margin-bottom:2px}.signature-canvas{width:100%;height:.35in;border:1px dashed #6d7680;background:#fff;touch-action:none}.ink-box{height:.18in;border-bottom:1px solid #333;margin-top:3px;position:relative}.ink-box span{position:absolute;bottom:1px;left:2px;font-size:4.35px;color:#555}
+.footer{position:absolute;left:0;right:0;bottom:0;height:.23in;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 .1in;font-size:5.7px}.badge{color:#ffe69c;font-weight:900}.notice{position:absolute;left:.10in;right:.10in;bottom:.405in;height:.145in;display:flex;align-items:center;justify-content:center;padding:2px .03in 0;border-top:0;font-size:4.35px;line-height:1.08;text-align:center;color:#29333d;overflow:hidden}.seal-img{width:.21in;height:.21in;border-radius:50%;object-fit:contain;border:1px solid #99a3ae;padding:1px;background:#fff;float:right;display:block}.hidden{display:none!important}.archive-list{max-height:220px;overflow:auto;border:1px solid #d5dbe3;border-radius:9px;margin-top:8px}.archive-item{padding:9px;border-bottom:1px solid #e4e8ee}.archive-item:last-child{border-bottom:0}.archive-item button{padding:6px 8px;margin:4px 4px 0 0}.security-box{border:1px solid #9aa7b7;border-radius:8px;padding:10px;background:#f7f9fb}.fingerprint{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;word-break:break-all;background:#eef2f6;padding:8px;border-radius:6px}.linked-chip{position:absolute;left:.10in;right:.10in;bottom:.265in;height:.105in;padding-top:2px;border-top:1px solid #9aa5b1;font-size:4.05px;line-height:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.linked-chip.empty{display:none}
+@media(max-width:950px){.app{grid-template-columns:1fr}.stage{justify-content:flex-start}}@media print{body{background:#fff}.controls,.no-print{display:none!important}.app{display:block;padding:0}.panel{border:0;box-shadow:none;padding:0}.stage{padding:0}.card-wrap{width:3.375in}.card{box-shadow:none;border:.3pt solid #999}@page{size:3.375in 2.125in;margin:0}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+<div class="app">
+<section class="panel controls">
+<h1>Declaration Card Designer</h1><div class="help">Private declaration credential only. Not government-issued identification.</div>
+<h2>Holder details</h2>
+<label>Full legal name<input id="fullName" type="text" value="Jane Example Citizen"></label>
+<div class="grid2"><label>Date of birth<input id="dob" type="date" value="1990-01-01"></label><label>Sex<input id="sex" type="text" value="X"></label></div>
+<label>Marital status<input id="marital" type="text" value="Single — Never Married"></label>
+<label>Place of birth<input id="birthPlace" type="text" value="Sample City, Ontario, Canada"></label>
+<label>Citizenship<input id="citizenship" type="text" value="Example Citizen"></label>
+<label>Occupation<textarea id="occupation">Example Occupation</textarea></label>
+<label>Residential address<textarea id="address">100 Example Street, Sample City, ON A1A 1A1</textarea></label>
+<label>Photo<input id="photoInput" type="file" accept="image/*"></label>
+<h2>Declaration details</h2>
+<label>Card / declaration number<input id="cardNo" type="text" value="ON-DC-YYYY-000001"></label>
+<div class="grid2"><label>Issue date<input id="issueDate" type="date"></label><label>Review date<input id="reviewDate" type="date"></label></div>
+<label>Expiry wording<input id="expiryText" type="text" value="Upon status change or change in information"></label>
+<label>Declaration wording<textarea id="declarationText">I solemnly declare that the information shown is true to the best of my knowledge and belief.</textarea></label>
+<h2>Linked ID and status evidence</h2>
+<div class="security-box">
+<div class="help">Records a privacy-limited reference to another document. Do not enter full sensitive ID numbers unless legally necessary.</div>
+<label>Linked identity document type<select id="linkedIdType"><option value="">None</option><option>Canadian Firearms Licence</option><option>Veteran's Service Card</option><option>Ontario Driver's Licence</option><option>Ontario Photo Card</option><option>Canadian Passport</option><option>Birth Certificate</option><option>Other</option></select></label>
+<div class="grid2"><label>Issuing authority<input id="linkedIssuer" type="text" placeholder="e.g. Canadian Firearms Program"></label><label>Reference / last 4 digits<input id="linkedRef" type="text" placeholder="Do not enter full number"></label></div>
+<div class="grid2"><label>Document expiry<input id="linkedExpiry" type="date"></label><label>Status evidence type<select id="statusEvidenceType"><option value="">Declarant statement only</option><option>Ontario marriage-record search / letter</option><option>Marriage certificate</option><option>Certificate of Divorce</option><option>Death certificate and marriage record</option><option>Common-law supporting records</option><option>Other supporting record</option></select></label></div>
+<label>Status evidence reference<input id="statusEvidenceRef" type="text" placeholder="File, letter, or record reference"></label>
+<label><input id="linkConsent" type="checkbox"> Declarant consents to recording this limited reference on the declaration record.</label>
+<div class="help" style="margin-top:8px">Record fingerprint</div><div id="fingerprint" class="fingerprint">Not generated</div>
+</div>
+<h2>Notary / commissioner</h2>
+<label>Name<input id="notaryName" type="text" value="Jane Notary"></label>
+<label>Capacity<select id="capacity"><option>Notary Public</option><option>Commissioner for Taking Affidavits</option><option>Licensed Paralegal and Commissioner</option></select></label>
+<label>Licence / appointment number<input id="licenceNo" type="text" value="NP-000000"></label>
+<div class="grid2"><label>Appointment<input id="appointmentExpiry" type="date"></label><label>Business phone<input id="notaryPhone" type="text" placeholder="Optional"></label></div>
+<label>Business / professional address<textarea id="notaryAddress" placeholder="Optional"></textarea></label>
+<label>Optional seal or logo image<input id="sealInput" type="file" accept="image/*"></label>
+<h2>Notary signature</h2><div class="help">Draw in the box or upload a signature image. The holder’s signature area remains blank for ink signing.</div>
+<canvas id="signPad" width="600" height="150" class="signature-canvas"></canvas>
+<label>Upload signature image<input id="signatureInput" type="file" accept="image/*"></label>
+<div class="actions"><button class="secondary" id="clearSig" type="button">Clear signature</button></div>
+<h2>Card archive</h2>
+<div class="help">Saved in this browser only. Export JSON for a portable serialized copy.</div>
+<label>Search saved cards<input id="archiveSearch" type="text" placeholder="Name, card number, status"></label>
+<div class="actions"><button class="primary" id="saveArchive" type="button">Save / update card</button><button class="secondary" id="newCard" type="button">Clear all / new card</button><button class="secondary" id="exportArchive" type="button">Export archive JSON</button><button class="secondary" id="importArchiveBtn" type="button">Import archive</button><input id="importArchive" type="file" accept=".json,application/json" class="hidden"></div>
+<div id="archiveList" class="archive-list"></div>
+<h2>Project and export</h2>
+<div class="actions"><button class="primary" id="saveProject" type="button">Save project JSON</button><button class="secondary" id="loadProjectBtn" type="button">Load project</button><input id="loadProject" type="file" accept=".json,application/json" class="hidden"><button class="primary" id="exportPng" type="button">Export 900 DPI PNG with bleed</button><button class="secondary" id="printCard" type="button">Print / Save PDF</button><button class="warn" id="exportHtml" type="button">Export editable HTML</button></div>
+</section>
+<section class="panel">
+<div class="stage"><div class="card-wrap"><div class="card" id="card">
+<div class="header"><div><div class="title">ONTARIO DECLARATION CARD</div><div class="subtitle">STATUTORY DECLARATION OF IDENTITY &amp; MARITAL STATUS</div></div><img id="logoPreview" class="logo" alt="Optional seal"></div>
+<div class="body">
+<div><img id="photoPreview" class="photo" alt="Holder photo"><div class="ink-box"><span>Holder signature — sign in ink</span></div></div>
+<div class="details">
+<div class="detail-row single"><div class="field"><b>Full legal name</b><span id="vFullName"></span></div></div>
+<div class="detail-row"><div class="field compact"><b>Date of birth</b><span id="vDob"></span></div><div class="field compact"><b>Sex</b><span id="vSex"></span></div></div>
+<div class="detail-row single"><div class="field"><b>Marital status</b><span class="status" id="vMarital"></span></div></div>
+<div class="detail-row single"><div class="field"><b>Place of birth</b><span id="vBirthPlace"></span></div></div>
+<div class="detail-row"><div class="field compact"><b>Citizenship</b><span id="vCitizenship"></span></div><div class="field compact"><b>Occupation</b><span id="vOccupation"></span></div></div>
+<div class="detail-row single"><div class="field"><b>Residence</b><span id="vAddress"></span></div></div>
+</div>
+<div class="notary-box">
+<div><img id="sealPreview" class="seal-img" alt=""><b>NOTARY / COMMISSIONER</b></div>
+<div><b>Name</b><div id="vNotaryName" class="line"></div></div>
+<div><b>Capacity</b><div id="vCapacity" class="notary-value"></div></div>
+<div><b>Licence / appointment no.</b><div id="vLicence" class="notary-value"></div></div>
+<div class="notary-row"><div><b>Appointment</b><div id="vAppointmentExpiry" class="notary-value"></div></div><div><b>Issue date</b><div id="vIssueDate" class="notary-value"></div></div></div>
+<div class="notary-row"><div><b>Review date</b><div id="vReviewDate" class="notary-value"></div></div><div><b>Signature</b><img id="sigPreview" style="width:100%;height:.19in;object-fit:contain;border-bottom:1px solid #555" alt="Notary signature"></div></div>
+</div>
+</div>
+<div id="linkedChip" class="linked-chip empty"><b>Linked record:</b> <span id="vLinked"></span> · <b>FP:</b> <span id="vFingerprint"></span></div>
+<div class="notice" id="vDeclaration"></div><div class="footer"><span id="vCardNo"></span><span class="badge">NOT GOVERNMENT ID</span><span id="vExpiry"></span></div>
+</div></div></div>
+<p class="help no-print">Finished CR80 trim size: 3.375 × 2.125 inches. Export includes 0.125 inch bleed on every side: 3.625 × 2.375 inches, approximately 3263 × 2138 pixels at 900 DPI.</p><div id="exportStatus" class="help no-print" aria-live="polite"></div>
+</section></div>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const fieldIds=["fullName","dob","sex","marital","birthPlace","citizenship","occupation","address","cardNo","issueDate","reviewDate","expiryText","declarationText","linkedIdType","linkedIssuer","linkedRef","linkedExpiry","statusEvidenceType","statusEvidenceRef","notaryName","capacity","licenceNo","appointmentExpiry","notaryPhone","notaryAddress"];
+const state={photo:"",seal:"",signature:"",recordId:""};
+const ARCHIVE_KEY="ontarioDeclarationCardArchive.v3";
+function fmtDate(value){if(!value)return"—";const d=new Date(value+"T12:00:00");return Number.isNaN(d.getTime())?value:d.toLocaleDateString("en-CA",{year:"numeric",month:"short",day:"numeric"});}
+function todayIso(){const n=new Date(),o=n.getTimezoneOffset()*60000;return new Date(n.getTime()-o).toISOString().slice(0,10);}
+function setStatus(message){if($("exportStatus"))$("exportStatus").textContent=message;}
+function storageAvailable(){try{const k="__declaration_card_storage_test__";localStorage.setItem(k,"1");localStorage.removeItem(k);return true;}catch(e){console.warn(e);return false;}}
+function placeholderPhoto(){return"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="360"><rect width="100%" height="100%" fill="#dde3ea"/><circle cx="150" cy="115" r="58" fill="#aeb8c5"/><rect x="65" y="190" width="170" height="130" rx="70" fill="#aeb8c5"/><text x="150" y="342" text-anchor="middle" font-family="Arial" font-size="18" fill="#52606d">PHOTO</text></svg>`)}
+function placeholderSeal(){return"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><circle cx="90" cy="90" r="82" fill="#fff" stroke="#b89248" stroke-width="7"/><circle cx="90" cy="90" r="58" fill="none" stroke="#10284a" stroke-width="4"/><text x="90" y="84" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="20" fill="#10284a">SEAL</text><text x="90" y="110" text-anchor="middle" font-family="Arial" font-size="14" fill="#10284a">OPTIONAL</text></svg>`)}
+function blankSignature(){return"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="150"></svg>`)}
+function fitCardText(){const card=$("card");if(!card)return;card.querySelectorAll(".field span,.notice,.notary-value,.line").forEach(el=>{el.style.fontSize="";let size=parseFloat(getComputedStyle(el).fontSize)||5,guard=0;while((el.scrollHeight>el.clientHeight+1||el.scrollWidth>el.clientWidth+1)&&size>3.75&&guard<16){size-=.2;el.style.fontSize=size+"px";guard++;}})}
+async function makeFingerprint(){const payload=[$("fullName").value,$("dob").value,$("marital").value,$("cardNo").value,$("linkedIdType").value,$("linkedIssuer").value,$("linkedRef").value,$("linkedExpiry").value,$("statusEvidenceType").value,$("statusEvidenceRef").value,$("issueDate").value].join("|");if(!payload.replace(/\|/g,"")){ $("fingerprint").textContent="Not generated";$("vFingerprint").textContent="—";return"";}try{if(window.crypto?.subtle&&window.TextEncoder){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(payload));const hex=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,"0")).join("");$("fingerprint").textContent=hex;$("vFingerprint").textContent=hex.slice(0,16).toUpperCase();return hex;}}catch(e){console.warn(e)}let h1=0x811c9dc5,h2=0x9e3779b9;for(let i=0;i<payload.length;i++){const c=payload.charCodeAt(i);h1=Math.imul(h1^c,0x01000193)>>>0;h2=Math.imul(h2+c+(h2<<6)+(h2>>>2),0x85ebca6b)>>>0;}const hex=(h1.toString(16).padStart(8,"0")+h2.toString(16).padStart(8,"0")).toUpperCase();$("fingerprint").textContent=hex.match(/.{1,4}/g).join("-");$("vFingerprint").textContent=hex;return hex;}
+function update(){const pairs={vFullName:"fullName",vSex:"sex",vMarital:"marital",vBirthPlace:"birthPlace",vCitizenship:"citizenship",vOccupation:"occupation",vAddress:"address",vCardNo:"cardNo",vExpiry:"expiryText",vDeclaration:"declarationText",vNotaryName:"notaryName",vCapacity:"capacity",vLicence:"licenceNo"};Object.entries(pairs).forEach(([v,f])=>$(v).textContent=$(f).value||" ");$("vDob").textContent=fmtDate($("dob").value);$("vIssueDate").textContent=fmtDate($("issueDate").value);$("vReviewDate").textContent=fmtDate($("reviewDate").value);$("vAppointmentExpiry").textContent=fmtDate($("appointmentExpiry").value);$("photoPreview").src=state.photo||placeholderPhoto();$("logoPreview").src=state.seal||placeholderSeal();$("sealPreview").src=state.seal||placeholderSeal();$("sigPreview").src=state.signature||blankSignature();const linked=[$("linkedIdType").value,$("linkedIssuer").value,$("linkedRef").value?"ref "+$("linkedRef").value:"",$("statusEvidenceType").value,$("statusEvidenceRef").value].filter(Boolean).join(" • ");$("vLinked").textContent=linked;$("linkedChip").classList.toggle("empty",!linked);requestAnimationFrame(fitCardText);makeFingerprint().catch(console.warn)}
+fieldIds.forEach(id=>{const el=$(id);if(el){el.addEventListener("input",update);el.addEventListener("change",update)}});$("linkConsent").addEventListener("change",update);
+function fileToData(input,key){const file=input.files?.[0];if(!file)return;if(!file.type.startsWith("image/")){alert("Please select an image file.");input.value="";return;}const r=new FileReader();r.onload=()=>{state[key]=String(r.result||"");update()};r.onerror=()=>alert("The image could not be read.");r.readAsDataURL(file)}
+$("photoInput").addEventListener("change",()=>fileToData($("photoInput"),"photo"));$("sealInput").addEventListener("change",()=>fileToData($("sealInput"),"seal"));
+const pad=$("signPad"),ctx=pad.getContext("2d");ctx.lineWidth=4;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#111";let drawing=false;function pointerPosition(e){const r=pad.getBoundingClientRect();return{x:(e.clientX-r.left)*pad.width/r.width,y:(e.clientY-r.top)*pad.height/r.height}}function beginSignature(e){drawing=true;pad.setPointerCapture?.(e.pointerId);const p=pointerPosition(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault()}function drawSignature(e){if(!drawing)return;const p=pointerPosition(e);ctx.lineTo(p.x,p.y);ctx.stroke();state.signature=pad.toDataURL("image/png");$("sigPreview").src=state.signature;e.preventDefault()}function endSignature(e){if(!drawing)return;drawing=false;state.signature=pad.toDataURL("image/png");try{pad.releasePointerCapture?.(e.pointerId)}catch{}update()}function loadSignatureImage(file){if(!file)return;if(!file.type.startsWith("image/")){alert("Please select an image file for the signature.");$("signatureInput").value="";return;}const reader=new FileReader();reader.onload=()=>{const image=new Image();image.onload=()=>{ctx.clearRect(0,0,pad.width,pad.height);const margin=12,availableW=pad.width-margin*2,availableH=pad.height-margin*2,scale=Math.min(availableW/image.width,availableH/image.height),drawW=image.width*scale,drawH=image.height*scale,x=(pad.width-drawW)/2,y=(pad.height-drawH)/2;ctx.drawImage(image,x,y,drawW,drawH);state.signature=pad.toDataURL("image/png");update()};image.onerror=()=>alert("The signature image could not be loaded.");image.src=String(reader.result||"")};reader.onerror=()=>alert("The signature image could not be read.");reader.readAsDataURL(file)}pad.addEventListener("pointerdown",beginSignature);pad.addEventListener("pointermove",drawSignature);pad.addEventListener("pointerup",endSignature);pad.addEventListener("pointercancel",endSignature);$("signatureInput").addEventListener("change",()=>loadSignatureImage($("signatureInput").files?.[0]));$("clearSig").addEventListener("click",()=>{ctx.clearRect(0,0,pad.width,pad.height);state.signature="";$("signatureInput").value="";update()});
+function getProject(){const data={};fieldIds.forEach(id=>data[id]=$(id).value);data.linkConsent=$("linkConsent").checked;return{...data,...state,version:3,updatedAt:new Date().toISOString()}}
+function restoreSignatureCanvas(){ctx.clearRect(0,0,pad.width,pad.height);if(!state.signature)return;const image=new Image();image.onload=()=>ctx.drawImage(image,0,0,pad.width,pad.height);image.src=state.signature}
+function applyProject(data){if(!data||typeof data!=="object")throw new Error("Invalid project data");fieldIds.forEach(id=>{if(data[id]!==undefined&&data[id]!==null)$(id).value=data[id]});$("linkConsent").checked=!!data.linkConsent;state.photo=data.photo||"";state.seal=data.seal||"";state.signature=data.signature||"";state.recordId=data.recordId||"";restoreSignatureCanvas();update()}
+function download(name,blob){const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function readArchive(){if(!storageAvailable())return[];try{const p=JSON.parse(localStorage.getItem(ARCHIVE_KEY)||"[]");return Array.isArray(p)?p:[]}catch(e){console.error(e);return[]}}
+function writeArchive(items){if(!storageAvailable())throw new Error("Browser storage is unavailable.");localStorage.setItem(ARCHIVE_KEY,JSON.stringify(items))}
+function newId(){return"rec-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8)}
+function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[ch])}
+function renderArchive(){const list=$("archiveList");if(!storageAvailable()){list.innerHTML="<div class='archive-item help'>Browser storage is unavailable. Use Save project JSON.</div>";return;}const q=$("archiveSearch").value.trim().toLowerCase();const items=readArchive().filter(r=>[r.fullName,r.cardNo,r.marital,r.linkedIdType].join(" ").toLowerCase().includes(q)).sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));list.innerHTML="";if(!items.length){list.innerHTML="<div class='archive-item help'>No saved cards.</div>";return;}items.forEach(record=>{const div=document.createElement("div");div.className="archive-item";div.innerHTML=`<b>${escapeHtml(record.fullName||"Unnamed")}</b><div class="help">${escapeHtml(record.cardNo||"No card number")} • ${escapeHtml(record.marital||"No status")} • ${record.updatedAt?escapeHtml(new Date(record.updatedAt).toLocaleString()):""}</div>`;const open=document.createElement("button");open.type="button";open.className="secondary";open.textContent="Open / update";open.addEventListener("click",()=>applyProject(record));const del=document.createElement("button");del.type="button";del.className="warn";del.textContent="Delete";del.addEventListener("click",()=>{if(!confirm("Delete this saved card?"))return;writeArchive(readArchive().filter(x=>x.recordId!==record.recordId));if(state.recordId===record.recordId)state.recordId="";renderArchive()});div.append(open,del);list.appendChild(div)})}
+$("saveArchive").addEventListener("click",async()=>{const button=$("saveArchive"),normal="Save / update card";try{if(!storageAvailable())throw new Error("Browser storage is unavailable.");if(!$("fullName").value.trim()){alert("Enter the holder's full legal name before saving.");$("fullName").focus();return;}if(!$("cardNo").value.trim()){alert("Enter a card or declaration number before saving.");$("cardNo").focus();return;}button.disabled=true;button.textContent="Saving…";await makeFingerprint();const record=getProject();if(!record.recordId)record.recordId=newId();state.recordId=record.recordId;const items=readArchive(),index=items.findIndex(x=>x.recordId===record.recordId);if(index>=0)items[index]=record;else items.push(record);writeArchive(items);if(!readArchive().find(x=>x.recordId===record.recordId))throw new Error("Save verification failed");renderArchive();button.textContent="Saved ✓";setStatus("Card saved in this browser. Export the archive JSON for a portable backup.");setTimeout(()=>{button.disabled=false;button.textContent=normal},1400)}catch(error){console.error(error);button.disabled=false;button.textContent=normal;let message="The card could not be saved in this browser.";if(error.name==="QuotaExceededError"||String(error.message).toLowerCase().includes("quota"))message="Browser storage is full. Reduce image sizes or save the project JSON.";else if(String(error.message).toLowerCase().includes("storage"))message="Browser storage is unavailable. Check browser settings or use Save project JSON.";setStatus(message);alert(message)}});
+$("archiveSearch").addEventListener("input",renderArchive);
+$("newCard").addEventListener("click",()=>{if(!confirm("Clear all fields and start a new card? Unsaved changes will be lost."))return;fieldIds.forEach(id=>{const el=$(id);if(el.tagName==="SELECT")el.selectedIndex=0;else el.value=""});$("linkConsent").checked=false;Object.assign(state,{photo:"",seal:"",signature:"",recordId:""});ctx.clearRect(0,0,pad.width,pad.height);$("declarationText").value="I solemnly declare that the information shown is true to the best of my knowledge and belief.";$("expiryText").value="Upon status change or change in information";$("issueDate").value=todayIso();update();setStatus("New blank card created.")});
+$("saveProject").addEventListener("click",()=>download("declaration-card-project.json",new Blob([JSON.stringify(getProject(),null,2)],{type:"application/json"})));
+$("loadProjectBtn").addEventListener("click",()=>$("loadProject").click());$("loadProject").addEventListener("change",()=>{const input=$("loadProject"),file=input.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{applyProject(JSON.parse(reader.result));setStatus("Project loaded successfully.")}catch(e){alert("Could not load project file.")}finally{input.value=""}};reader.readAsText(file)});
+$("printCard").addEventListener("click",()=>window.print());
+$("exportArchive").addEventListener("click",()=>download("declaration-card-archive.json",new Blob([JSON.stringify({format:"OntarioDeclarationCardArchive",version:3,exportedAt:new Date().toISOString(),records:readArchive()},null,2)],{type:"application/json"})));
+$("importArchiveBtn").addEventListener("click",()=>$("importArchive").click());$("importArchive").addEventListener("change",()=>{const input=$("importArchive"),file=input.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result),incoming=Array.isArray(data)?data:data.records;if(!Array.isArray(incoming))throw new Error();const map=new Map(readArchive().map(x=>[x.recordId||newId(),x]));incoming.forEach(x=>{if(x&&typeof x==="object"){const id=x.recordId||newId();map.set(id,{...x,recordId:id})}});writeArchive([...map.values()]);renderArchive();alert("Archive imported.")}catch(e){alert("Could not import archive.")}finally{input.value=""}};reader.readAsText(file)});
+$("exportHtml").addEventListener("click",()=>{const clone=document.documentElement.cloneNode(true),restore=document.createElement("script"),data=JSON.stringify(getProject()).replace(/</g,"\\u003c");restore.textContent=`window.addEventListener("DOMContentLoaded",()=>{try{applyProject(${data})}catch(e){console.error(e)}});`;clone.querySelector("body").appendChild(restore);download("editable-declaration-card.html",new Blob(["<!doctype html>\n"+clone.outerHTML],{type:"text/html"}))});
+async function waitForCardImages(target){
+  const images=[...target.querySelectorAll("img")];
+  await Promise.all(images.map(async image=>{
+    if(image.complete&&image.naturalWidth>0){
+      try{await image.decode?.()}catch{}
+      return;
+    }
+    await new Promise(resolve=>{
+      const done=()=>resolve();
+      image.addEventListener("load",done,{once:true});
+      image.addEventListener("error",done,{once:true});
+    });
+    try{await image.decode?.()}catch{}
+  }));
+}
+
+function crc32(bytes){
+  let crc=0xffffffff;
+  for(const byte of bytes){
+    crc^=byte;
+    for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);
+  }
+  return (crc^0xffffffff)>>>0;
+}
+function makePngChunk(type,data){
+  const typeBytes=new TextEncoder().encode(type),length=data.length;
+  const chunk=new Uint8Array(12+length),view=new DataView(chunk.buffer);
+  view.setUint32(0,length);
+  chunk.set(typeBytes,4);
+  chunk.set(data,8);
+  view.setUint32(8+length,crc32(new Uint8Array([...typeBytes,...data])));
+  return chunk;
+}
+async function setPngDpi(blob,dpi){
+  const bytes=new Uint8Array(await blob.arrayBuffer());
+  const ppm=Math.round(dpi/0.0254);
+  const data=new Uint8Array(9),view=new DataView(data.buffer);
+  view.setUint32(0,ppm);view.setUint32(4,ppm);data[8]=1;
+  const phys=makePngChunk("pHYs",data);
+  let offset=8,insertAt=8;
+  while(offset+12<=bytes.length){
+    const length=new DataView(bytes.buffer,bytes.byteOffset+offset,4).getUint32(0);
+    const type=String.fromCharCode(...bytes.slice(offset+4,offset+8));
+    offset+=12+length;
+    if(type==="IHDR"){insertAt=offset;break;}
+  }
+  const output=new Uint8Array(bytes.length+phys.length);
+  output.set(bytes.slice(0,insertAt),0);
+  output.set(phys,insertAt);
+  output.set(bytes.slice(insertAt),insertAt+phys.length);
+  return new Blob([output],{type:"image/png"});
+}
+
+async function exportCardAsPng(){
+  const status=$("exportStatus");
+  status.textContent="Preparing card image…";
+  try{
+    if(typeof html2canvas!=="function")throw new Error("Export library unavailable");
+    if(document.fonts?.ready)await document.fonts.ready;
+
+    update();
+    const target=$("card");
+    await waitForCardImages(target);
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+    const rect=target.getBoundingClientRect();
+    const dpi=900;
+    const cssDpi=96;
+    const outputScale=dpi/cssDpi;
+    const bleedInches=0.125;
+    const bleedPixels=Math.round(bleedInches*dpi);
+    const trimCanvas=await html2canvas(target,{
+      backgroundColor:null,
+      scale:outputScale,
+      useCORS:true,
+      allowTaint:false,
+      logging:false,
+      width:rect.width,
+      height:rect.height,
+      scrollX:-window.scrollX,
+      scrollY:-window.scrollY,
+      windowWidth:document.documentElement.scrollWidth,
+      windowHeight:document.documentElement.scrollHeight,
+      onclone:doc=>{
+        const clonedCard=doc.getElementById("card");
+        if(clonedCard){
+          clonedCard.style.transform="none";
+          clonedCard.style.margin="0";
+          clonedCard.style.boxShadow="none";
+          clonedCard.style.border="0";
+          clonedCard.style.borderRadius="0";
+        }
+      }
+    });
+
+    const canvas=document.createElement("canvas");
+    canvas.width=trimCanvas.width+bleedPixels*2;
+    canvas.height=trimCanvas.height+bleedPixels*2;
+    const out=canvas.getContext("2d");
+    out.imageSmoothingEnabled=false;
+
+    // Extend the outermost artwork pixels into the bleed, then place the trim artwork.
+    out.drawImage(trimCanvas,0,0,1,trimCanvas.height,0,bleedPixels,bleedPixels,trimCanvas.height);
+    out.drawImage(trimCanvas,trimCanvas.width-1,0,1,trimCanvas.height,bleedPixels+trimCanvas.width,bleedPixels,bleedPixels,trimCanvas.height);
+    out.drawImage(trimCanvas,0,0,trimCanvas.width,1,bleedPixels,0,trimCanvas.width,bleedPixels);
+    out.drawImage(trimCanvas,0,trimCanvas.height-1,trimCanvas.width,1,bleedPixels,bleedPixels+trimCanvas.height,trimCanvas.width,bleedPixels);
+    out.drawImage(trimCanvas,0,0,1,1,0,0,bleedPixels,bleedPixels);
+    out.drawImage(trimCanvas,trimCanvas.width-1,0,1,1,bleedPixels+trimCanvas.width,0,bleedPixels,bleedPixels);
+    out.drawImage(trimCanvas,0,trimCanvas.height-1,1,1,0,bleedPixels+trimCanvas.height,bleedPixels,bleedPixels);
+    out.drawImage(trimCanvas,trimCanvas.width-1,trimCanvas.height-1,1,1,bleedPixels+trimCanvas.width,bleedPixels+trimCanvas.height,bleedPixels,bleedPixels);
+    out.drawImage(trimCanvas,bleedPixels,bleedPixels);
+
+    const rawBlob=await new Promise((resolve,reject)=>
+      canvas.toBlob(b=>b?resolve(b):reject(new Error("PNG creation failed")),"image/png")
+    );
+    const blob=await setPngDpi(rawBlob,dpi);
+    download("declaration-card-900dpi-with-bleed.png",blob);
+    status.textContent=`Exported ${canvas.width} × ${canvas.height} PNG: 3.625 × 2.375 inches including 0.125 inch bleed on every side, with 900 DPI metadata.`;
+  }catch(error){
+    console.error(error);
+    status.textContent="Export failed. Reload while online and try again.";
+    alert("Could not export the card image.");
+  }
+}
+$("exportPng").addEventListener("click",exportCardAsPng);
+function initialize(){if(!$("issueDate").value)$("issueDate").value=todayIso();if(!storageAvailable()){$("saveArchive").disabled=true;$("saveArchive").title="Browser storage is unavailable.";setStatus("Browser storage is unavailable. Use Save project JSON to preserve your work.")}renderArchive();update()}initialize();
+</script>
+</body>
+</html>
