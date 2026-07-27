@@ -66,7 +66,7 @@ button{border:0;border-radius:9px;padding:10px 12px;font-weight:800;cursor:point
 <div class="actions"><button class="primary" id="saveArchive" type="button">Save / update card</button><button class="secondary" id="newCard" type="button">Clear all / new card</button><button class="secondary" id="exportArchive" type="button">Export archive JSON</button><button class="secondary" id="importArchiveBtn" type="button">Import archive</button><input id="importArchive" type="file" accept=".json,application/json" class="hidden"></div>
 <div id="archiveList" class="archive-list"></div>
 <h2>Project and export</h2>
-<div class="actions"><button class="primary" id="saveProject" type="button">Save project JSON</button><button class="secondary" id="loadProjectBtn" type="button">Load project</button><input id="loadProject" type="file" accept=".json,application/json" class="hidden"><button class="primary" id="exportPng" type="button">Export matching 900 DPI PNG</button><button class="secondary" id="printCard" type="button">Print / Save PDF</button><button class="warn" id="exportHtml" type="button">Export editable HTML</button></div>
+<div class="actions"><button class="primary" id="saveProject" type="button">Save project JSON</button><button class="secondary" id="loadProjectBtn" type="button">Load project</button><input id="loadProject" type="file" accept=".json,application/json" class="hidden"><button class="primary" id="exportPng" type="button">Export 900 DPI PNG with bleed</button><button class="secondary" id="printCard" type="button">Print / Save PDF</button><button class="warn" id="exportHtml" type="button">Export editable HTML</button></div>
 </section>
 <section class="panel">
 <div class="stage"><div class="card-wrap"><div class="card" id="card">
@@ -93,7 +93,7 @@ button{border:0;border-radius:9px;padding:10px 12px;font-weight:800;cursor:point
 <div id="linkedChip" class="linked-chip empty"><b>Linked record:</b> <span id="vLinked"></span> · <b>FP:</b> <span id="vFingerprint"></span></div>
 <div class="notice" id="vDeclaration"></div><div class="footer"><span id="vCardNo"></span><span class="badge">NOT GOVERNMENT ID</span><span id="vExpiry"></span></div>
 </div></div></div>
-<p class="help no-print">CR80 card size: 3.375 × 2.125 inches. The PNG exporter captures the card at approximately 3038 × 1913 pixels (900 DPI).</p><div id="exportStatus" class="help no-print" aria-live="polite"></div>
+<p class="help no-print">Finished CR80 trim size: 3.375 × 2.125 inches. Export includes 0.125 inch bleed on every side: 3.625 × 2.375 inches, approximately 3263 × 2138 pixels at 900 DPI.</p><div id="exportStatus" class="help no-print" aria-live="polite"></div>
 </section></div>
 <script>
 "use strict";
@@ -148,6 +148,44 @@ async function waitForCardImages(target){
     try{await image.decode?.()}catch{}
   }));
 }
+
+function crc32(bytes){
+  let crc=0xffffffff;
+  for(const byte of bytes){
+    crc^=byte;
+    for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);
+  }
+  return (crc^0xffffffff)>>>0;
+}
+function makePngChunk(type,data){
+  const typeBytes=new TextEncoder().encode(type),length=data.length;
+  const chunk=new Uint8Array(12+length),view=new DataView(chunk.buffer);
+  view.setUint32(0,length);
+  chunk.set(typeBytes,4);
+  chunk.set(data,8);
+  view.setUint32(8+length,crc32(new Uint8Array([...typeBytes,...data])));
+  return chunk;
+}
+async function setPngDpi(blob,dpi){
+  const bytes=new Uint8Array(await blob.arrayBuffer());
+  const ppm=Math.round(dpi/0.0254);
+  const data=new Uint8Array(9),view=new DataView(data.buffer);
+  view.setUint32(0,ppm);view.setUint32(4,ppm);data[8]=1;
+  const phys=makePngChunk("pHYs",data);
+  let offset=8,insertAt=8;
+  while(offset+12<=bytes.length){
+    const length=new DataView(bytes.buffer,bytes.byteOffset+offset,4).getUint32(0);
+    const type=String.fromCharCode(...bytes.slice(offset+4,offset+8));
+    offset+=12+length;
+    if(type==="IHDR"){insertAt=offset;break;}
+  }
+  const output=new Uint8Array(bytes.length+phys.length);
+  output.set(bytes.slice(0,insertAt),0);
+  output.set(phys,insertAt);
+  output.set(bytes.slice(insertAt),insertAt+phys.length);
+  return new Blob([output],{type:"image/png"});
+}
+
 async function exportCardAsPng(){
   const status=$("exportStatus");
   status.textContent="Preparing card image…";
@@ -161,8 +199,12 @@ async function exportCardAsPng(){
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 
     const rect=target.getBoundingClientRect();
-    const outputScale=900/96;
-    const canvas=await html2canvas(target,{
+    const dpi=900;
+    const cssDpi=96;
+    const outputScale=dpi/cssDpi;
+    const bleedInches=0.125;
+    const bleedPixels=Math.round(bleedInches*dpi);
+    const trimCanvas=await html2canvas(target,{
       backgroundColor:null,
       scale:outputScale,
       useCORS:true,
@@ -180,15 +222,35 @@ async function exportCardAsPng(){
           clonedCard.style.transform="none";
           clonedCard.style.margin="0";
           clonedCard.style.boxShadow="none";
+          clonedCard.style.border="0";
+          clonedCard.style.borderRadius="0";
         }
       }
     });
 
-    const blob=await new Promise((resolve,reject)=>
+    const canvas=document.createElement("canvas");
+    canvas.width=trimCanvas.width+bleedPixels*2;
+    canvas.height=trimCanvas.height+bleedPixels*2;
+    const out=canvas.getContext("2d");
+    out.imageSmoothingEnabled=false;
+
+    // Extend the outermost artwork pixels into the bleed, then place the trim artwork.
+    out.drawImage(trimCanvas,0,0,1,trimCanvas.height,0,bleedPixels,bleedPixels,trimCanvas.height);
+    out.drawImage(trimCanvas,trimCanvas.width-1,0,1,trimCanvas.height,bleedPixels+trimCanvas.width,bleedPixels,bleedPixels,trimCanvas.height);
+    out.drawImage(trimCanvas,0,0,trimCanvas.width,1,bleedPixels,0,trimCanvas.width,bleedPixels);
+    out.drawImage(trimCanvas,0,trimCanvas.height-1,trimCanvas.width,1,bleedPixels,bleedPixels+trimCanvas.height,trimCanvas.width,bleedPixels);
+    out.drawImage(trimCanvas,0,0,1,1,0,0,bleedPixels,bleedPixels);
+    out.drawImage(trimCanvas,trimCanvas.width-1,0,1,1,bleedPixels+trimCanvas.width,0,bleedPixels,bleedPixels);
+    out.drawImage(trimCanvas,0,trimCanvas.height-1,1,1,0,bleedPixels+trimCanvas.height,bleedPixels,bleedPixels);
+    out.drawImage(trimCanvas,trimCanvas.width-1,trimCanvas.height-1,1,1,bleedPixels+trimCanvas.width,bleedPixels+trimCanvas.height,bleedPixels,bleedPixels);
+    out.drawImage(trimCanvas,bleedPixels,bleedPixels);
+
+    const rawBlob=await new Promise((resolve,reject)=>
       canvas.toBlob(b=>b?resolve(b):reject(new Error("PNG creation failed")),"image/png")
     );
-    download("declaration-card-900dpi.png",blob);
-    status.textContent=`Exported ${canvas.width} × ${canvas.height} PNG at 900 DPI directly from the displayed card.`;
+    const blob=await setPngDpi(rawBlob,dpi);
+    download("declaration-card-900dpi-with-bleed.png",blob);
+    status.textContent=`Exported ${canvas.width} × ${canvas.height} PNG: 3.625 × 2.375 inches including 0.125 inch bleed on every side, with 900 DPI metadata.`;
   }catch(error){
     console.error(error);
     status.textContent="Export failed. Reload while online and try again.";
