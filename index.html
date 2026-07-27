@@ -133,7 +133,68 @@ $("printCard").addEventListener("click",()=>window.print());
 $("exportArchive").addEventListener("click",()=>download("declaration-card-archive.json",new Blob([JSON.stringify({format:"OntarioDeclarationCardArchive",version:3,exportedAt:new Date().toISOString(),records:readArchive()},null,2)],{type:"application/json"})));
 $("importArchiveBtn").addEventListener("click",()=>$("importArchive").click());$("importArchive").addEventListener("change",()=>{const input=$("importArchive"),file=input.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result),incoming=Array.isArray(data)?data:data.records;if(!Array.isArray(incoming))throw new Error();const map=new Map(readArchive().map(x=>[x.recordId||newId(),x]));incoming.forEach(x=>{if(x&&typeof x==="object"){const id=x.recordId||newId();map.set(id,{...x,recordId:id})}});writeArchive([...map.values()]);renderArchive();alert("Archive imported.")}catch(e){alert("Could not import archive.")}finally{input.value=""}};reader.readAsText(file)});
 $("exportHtml").addEventListener("click",()=>{const clone=document.documentElement.cloneNode(true),restore=document.createElement("script"),data=JSON.stringify(getProject()).replace(/</g,"\\u003c");restore.textContent=`window.addEventListener("DOMContentLoaded",()=>{try{applyProject(${data})}catch(e){console.error(e)}});`;clone.querySelector("body").appendChild(restore);download("editable-declaration-card.html",new Blob(["<!doctype html>\n"+clone.outerHTML],{type:"text/html"}))});
-async function exportCardAsPng(){const status=$("exportStatus");status.textContent="Preparing card image…";try{if(typeof html2canvas!=="function")throw new Error("Export library unavailable");if(document.fonts?.ready)await document.fonts.ready;update();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));const target=$("card"),rect=target.getBoundingClientRect(),targetW=1013,targetH=638,canvas=await html2canvas(target,{backgroundColor:null,scale:targetW/rect.width,useCORS:true,allowTaint:false,logging:false,width:rect.width,height:rect.height,scrollX:0,scrollY:-window.scrollY}),finalCanvas=document.createElement("canvas");finalCanvas.width=targetW;finalCanvas.height=targetH;const g=finalCanvas.getContext("2d");g.imageSmoothingEnabled=true;g.imageSmoothingQuality="high";g.drawImage(canvas,0,0,targetW,targetH);const blob=await new Promise((resolve,reject)=>finalCanvas.toBlob(b=>b?resolve(b):reject(new Error("PNG creation failed")),"image/png"));download("declaration-card-300dpi.png",blob);status.textContent="Exported 1013 × 638 PNG."}catch(error){console.error(error);status.textContent="Export failed. Reload while online and try again.";alert("Could not export the card image.")}}
+async function exportCardAsPng(){
+  const status=$("exportStatus");
+  status.textContent="Preparing card image…";
+  try{
+    if(typeof html2canvas!=="function")throw new Error("Export library unavailable");
+    if(document.fonts?.ready)await document.fonts.ready;
+
+    update();
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+    const target=$("card");
+    const rect=target.getBoundingClientRect();
+    const targetW=1013;
+    const targetH=638;
+    const scale=Math.min(targetW/rect.width,targetH/rect.height);
+
+    const canvas=await html2canvas(target,{
+      backgroundColor:null,
+      scale,
+      useCORS:true,
+      allowTaint:false,
+      logging:false,
+      scrollX:0,
+      scrollY:0,
+      windowWidth:document.documentElement.clientWidth,
+      windowHeight:document.documentElement.clientHeight,
+      onclone:doc=>{
+        const clonedCard=doc.getElementById("card");
+        if(clonedCard){
+          clonedCard.style.transform="none";
+          clonedCard.style.margin="0";
+          clonedCard.style.boxShadow="none";
+        }
+      }
+    });
+
+    const finalCanvas=document.createElement("canvas");
+    finalCanvas.width=targetW;
+    finalCanvas.height=targetH;
+    const g=finalCanvas.getContext("2d");
+    g.clearRect(0,0,targetW,targetH);
+    g.imageSmoothingEnabled=true;
+    g.imageSmoothingQuality="high";
+
+    const drawScale=Math.min(targetW/canvas.width,targetH/canvas.height);
+    const drawW=Math.round(canvas.width*drawScale);
+    const drawH=Math.round(canvas.height*drawScale);
+    const x=Math.round((targetW-drawW)/2);
+    const y=Math.round((targetH-drawH)/2);
+    g.drawImage(canvas,x,y,drawW,drawH);
+
+    const blob=await new Promise((resolve,reject)=>
+      finalCanvas.toBlob(b=>b?resolve(b):reject(new Error("PNG creation failed")),"image/png")
+    );
+    download("declaration-card-300dpi.png",blob);
+    status.textContent=`Exported ${targetW} × ${targetH} PNG without cropping or distortion.`;
+  }catch(error){
+    console.error(error);
+    status.textContent="Export failed. Reload while online and try again.";
+    alert("Could not export the card image.");
+  }
+}
 $("exportPng").addEventListener("click",exportCardAsPng);
 function initialize(){if(!$("issueDate").value)$("issueDate").value=todayIso();if(!storageAvailable()){$("saveArchive").disabled=true;$("saveArchive").title="Browser storage is unavailable.";setStatus("Browser storage is unavailable. Use Save project JSON to preserve your work.")}renderArchive();update()}initialize();
 </script>
